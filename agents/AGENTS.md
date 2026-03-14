@@ -1,71 +1,83 @@
-# ACQUISITOR - Agent Tree
+---
+# ACQUISITOR Agents Registry
 
-## Agent Hierarchy
+This directory contains agent configurations and runtime specifications for the
+ACQUISITOR platform.
 
+## Agent Definitions
+
+### builder
+**Role:** Lead Engineer
+**Responsibilities:**
+- API development and maintenance
+- Frontend implementation
+- Database schema design
+- Infrastructure as code
+- Code review and quality
+
+**Configuration:**
+```yaml
+agent:
+  name: builder
+  workspace: /api, /web
+  tools: [read, write, edit, exec]
+  models: [anthropic/claude-opus-4, kimi-coding/kimi-for-coding]
 ```
-ACQUISITOR (Platform Orchestrator)
-├── SCOUT (Market Intelligence Agent)
-│   ├── BizBuySell Scraper
-│   ├── BizQuest Scraper
-│   ├── Market Snapshot Aggregator
-│   └── Research Assistant
-├── QUALIFY (Lead Scoring Agent)
-│   ├── Scoring Engine
-│   ├── Comparable Deal Matcher
-│   └── AI Assessment Generator
-└── DEALFLOW (Outreach & CRM Agent)
-    ├── Inbox Monitor
-    ├── Response Agent
-    ├── SMS Agent
-    └── Booking Agent
+
+### researcher
+**Role:** Data Analyst
+**Responsibilities:**
+- Market research
+- Company data aggregation
+- Financial analysis
+- Competitor analysis
+- Source verification
+
+**Configuration:**
+```yaml
+agent:
+  name: researcher
+  workspace: /scrapers, /data
+  tools: [read, exec, browser]
+  models: [perplexity/sonar, openai/gpt-4o]
 ```
 
-## Agent Descriptions
+### captain
+**Role:** System Coordinator
+**Responsibilities:**
+- Task routing
+- Priority management
+- Conflict resolution
+- User communication
+- System monitoring
 
-### SCOUT - Market Intelligence Agent
-**Role:** Discover and map the acquisition landscape
-**Tools:** Playwright scrapers, pgvector, market analysis skills
-**Cron Jobs:** Daily scrapes at 6 AM, weekly trend analysis
-**Memory:** Market snapshots, listing archive, saved searches
+**Configuration:**
+```yaml
+agent:
+  name: captain
+  workspace: /
+  tools: [read, exec, subagents]
+  models: [anthropic/claude-opus-4]
+```
 
-### QUALIFY - Lead Scoring Agent
-**Role:** Evaluate and score leads for fit
-**Tools:** Scoring algorithms, pgvector similarity search, Claude API
-**Cron Jobs:** Score new listings hourly, weekly model evaluation
-**Memory:** Score history, user preferences, rejection patterns
+## Agent Communication Protocol
 
-### DEALFLOW - Outreach & CRM Agent
-**Role:** Execute autonomous outreach and manage pipeline
-**Tools:** Gmail API, Twilio, Cal.com, Telegram
-**Cron Jobs:** Outreach engine (25+/day), Pipeline Brain daily heartbeat
-**Memory:** Conversation history, engagement patterns, pipeline state
+```json
+{
+  "message_id": "uuid",
+  "from": "agent_name",
+  "to": "agent_name|broadcast",
+  "timestamp": "ISO8601",
+  "type": "task|response|alert|query",
+  "payload": {},
+  "priority": "low|normal|high|critical",
+  "context": {}
+}
+```
 
-## Integration Points
+## Adding New Agents
 
-**SCOUT → QUALIFY:** New listings trigger automatic scoring
-**QUALIFY → DEALFLOW:** Approved leads enter outreach queue
-**DEALFLOW → SCOUT:** Engagement data feeds back to scoring model
-**All → Platform:** Metrics and activity feed to Dashboard
-
-## Communication Protocol
-
-Agents communicate via:
-1. Database state changes (PostgreSQL)
-2. Redis pub/sub for real-time events
-3. Direct API calls for synchronous operations
-4. Event hooks for asynchronous workflows
-
-## Failure Handling
-
-- Each agent has retry logic with exponential backoff
-- Failed operations logged to notification center
-- Critical failures escalate to human via Telegram
-- Degraded mode: agents continue operating with reduced functionality
-
-## Scaling Considerations
-
-Current target: 25 leads/day outreach
-Phase 2 target: 100 leads/day
-Phase 3 target: 250+ leads/day with multi-tenant support
-
-Agents are stateless where possible, allowing horizontal scaling.
+1. Create agent directory under `/agents/{name}/`
+2. Add `SOUL.md` defining persona and capabilities
+3. Add entry to this registry
+4. Configure tools and permissions in gateway
