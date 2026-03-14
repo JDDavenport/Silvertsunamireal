@@ -16,9 +16,11 @@ import type {
   ApiResponse,
   ApiError 
 } from '../types';
+import { mockLeads, mockPipelineLeads, mockActivities, mockMetrics, mockBookings, getMockLeadDetail } from '../data/mock';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || true; // Default to true for demo
 
 // Default request timeout (ms)
 const DEFAULT_TIMEOUT = 30000;
@@ -172,6 +174,9 @@ function buildQueryString(
 export const apiClient = {
   // Health check
   health: async (): Promise<{ status: string; services: { database: string; redis: string } }> => {
+    if (USE_MOCK_DATA) {
+      return { status: 'healthy', services: { database: 'connected', redis: 'connected' } };
+    }
     const response = await fetchWithRetry<ApiResponse<{ status: string; services: { database: string; redis: string } }>>(
       `${API_BASE_URL}/health`
     );
@@ -183,6 +188,48 @@ export const apiClient = {
     filters?: LeadFilters,
     pagination?: PaginationParams
   ): Promise<{ leads: Lead[]; meta: { page: number; limit: number; total: number; hasMore: boolean } }> => {
+    if (USE_MOCK_DATA) {
+      let filtered = [...mockLeads];
+      
+      // Apply filters
+      if (filters?.search) {
+        const search = filters.search.toLowerCase();
+        filtered = filtered.filter(l => 
+          l.name.toLowerCase().includes(search) ||
+          l.industry.toLowerCase().includes(search)
+        );
+      }
+      if (filters?.industry && filters.industry !== 'All') {
+        filtered = filtered.filter(l => l.industry === filters.industry);
+      }
+      if (filters?.status && filters.status !== 'All') {
+        filtered = filtered.filter(l => l.status === filters.status);
+      }
+      if (filters?.minScore !== undefined) {
+        filtered = filtered.filter(l => l.score >= filters.minScore!);
+      }
+      
+      // Apply sorting
+      const sortBy = pagination?.sortBy || 'score';
+      const sortOrder = pagination?.sortOrder || 'desc';
+      filtered.sort((a, b) => {
+        const aVal = a[sortBy as keyof Lead];
+        const bVal = b[sortBy as keyof Lead];
+        if (sortOrder === 'desc') return (bVal as number) - (aVal as number);
+        return (aVal as number) - (bVal as number);
+      });
+      
+      const page = pagination?.page || 1;
+      const limit = pagination?.limit || 12;
+      const start = (page - 1) * limit;
+      const paginated = filtered.slice(start, start + limit);
+      
+      return {
+        leads: paginated,
+        meta: { page, limit, total: filtered.length, hasMore: start + limit < filtered.length }
+      };
+    }
+    
     const query = buildQueryString(filters, pagination);
     const response = await fetchWithRetry<ApiResponse<Lead[]>>(
       `${API_BASE_URL}/api/scout/leads${query}`
@@ -199,6 +246,11 @@ export const apiClient = {
   },
 
   getLeadById: async (id: string): Promise<LeadDetail> => {
+    if (USE_MOCK_DATA) {
+      const leadDetail = getMockLeadDetail(id);
+      if (!leadDetail) throw new ApiClientError('Lead not found', 404);
+      return leadDetail;
+    }
     const response = await fetchWithRetry<ApiResponse<LeadDetail>>(
       `${API_BASE_URL}/api/scout/leads/${id}`
     );
@@ -209,6 +261,12 @@ export const apiClient = {
     id: string,
     status: Lead['status']
   ): Promise<Lead> => {
+    if (USE_MOCK_DATA) {
+      const lead = mockLeads.find(l => l.id === id);
+      if (!lead) throw new ApiClientError('Lead not found', 404);
+      lead.status = status;
+      return lead;
+    }
     const response = await fetchWithRetry<ApiResponse<Lead>>(
       `${API_BASE_URL}/api/scout/leads/${id}/status`,
       {
@@ -233,6 +291,9 @@ export const apiClient = {
 
   // Pipeline
   getPipeline: async (): Promise<PipelineLead[]> => {
+    if (USE_MOCK_DATA) {
+      return mockPipelineLeads;
+    }
     const response = await fetchWithRetry<ApiResponse<PipelineLead[]>>(
       `${API_BASE_URL}/api/pipeline`
     );
@@ -243,6 +304,13 @@ export const apiClient = {
     leadId: string,
     stage: PipelineStage
   ): Promise<PipelineLead> => {
+    if (USE_MOCK_DATA) {
+      const lead = mockPipelineLeads.find(l => l.id === leadId);
+      if (!lead) throw new ApiClientError('Lead not found', 404);
+      lead.stage = stage;
+      lead.lastActivityAt = new Date().toISOString();
+      return lead;
+    }
     const response = await fetchWithRetry<ApiResponse<PipelineLead>>(
       `${API_BASE_URL}/api/pipeline/${leadId}/stage`,
       {
@@ -255,6 +323,9 @@ export const apiClient = {
 
   // Activity
   getActivities: async (limit = 20): Promise<Activity[]> => {
+    if (USE_MOCK_DATA) {
+      return mockActivities.slice(0, limit);
+    }
     const response = await fetchWithRetry<ApiResponse<Activity[]>>(
       `${API_BASE_URL}/api/activity?limit=${limit}`
     );
@@ -263,6 +334,9 @@ export const apiClient = {
 
   // Metrics
   getMetrics: async (): Promise<DashboardMetrics> => {
+    if (USE_MOCK_DATA) {
+      return mockMetrics;
+    }
     const response = await fetchWithRetry<ApiResponse<DashboardMetrics>>(
       `${API_BASE_URL}/api/metrics`
     );
@@ -271,6 +345,12 @@ export const apiClient = {
 
   // Bookings
   getBookings: async (upcoming = true): Promise<Booking[]> => {
+    if (USE_MOCK_DATA) {
+      if (upcoming) {
+        return mockBookings.filter(b => new Date(b.scheduledAt) > new Date());
+      }
+      return mockBookings;
+    }
     const response = await fetchWithRetry<ApiResponse<Booking[]>>(
       `${API_BASE_URL}/api/bookings?upcoming=${upcoming}`
     );
@@ -278,6 +358,11 @@ export const apiClient = {
   },
 
   createBooking: async (booking: Omit<Booking, 'id'>): Promise<Booking> => {
+    if (USE_MOCK_DATA) {
+      const newBooking = { ...booking, id: String(mockBookings.length + 1) };
+      mockBookings.push(newBooking);
+      return newBooking;
+    }
     const response = await fetchWithRetry<ApiResponse<Booking>>(
       `${API_BASE_URL}/api/bookings`,
       {

@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/src/index.ts"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "postgresql://demo:demo@localhost:5432/acquisitor",
+    "REDIS_URL": "redis://localhost:6379",
+    "USE_MOCK_DATA": "true"
+  }
+}
