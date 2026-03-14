@@ -165,13 +165,13 @@ export function ActivityFeed({
                   {/* Metadata */}
                   {activity.metadata && Object.keys(activity.metadata).length > 0 && (
                     <div className="mt-1 text-xs text-gray-500">
-                      {activity.metadata.previousStage && activity.metadata.newStage && (
+                      {(activity.metadata.previousStage as string | undefined) && (activity.metadata.newStage as string | undefined) && (
                         <span>
-                          {activity.metadata.previousStage} → {activity.metadata.newStage}
+                          {activity.metadata.previousStage as string} → {activity.metadata.newStage as string}
                         </span>
                       )}
-                      {activity.metadata.emailSubject && (
-                        <span className="truncate">"{activity.metadata.emailSubject}"</span>
+                      {(activity.metadata.emailSubject as string | undefined) && (
+                        <span className="truncate">"{activity.metadata.emailSubject as string}"</span>
                       )}
                     </div>
                   )}

@@ -189,7 +189,12 @@ export const apiClient = {
     );
     return {
       leads: response.data,
-      meta: response.meta || { page: 1, limit: 20, total: 0, hasMore: false },
+      meta: {
+        page: response.meta?.page ?? 1,
+        limit: response.meta?.limit ?? 20,
+        total: response.meta?.total ?? 0,
+        hasMore: response.meta?.hasMore ?? false,
+      },
     };
   },
 
