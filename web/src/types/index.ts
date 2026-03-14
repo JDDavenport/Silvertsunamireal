@@ -162,3 +162,46 @@ export interface PaginationParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+// INTAKE Module Types
+export interface BuyerProfile {
+  background: string;
+  industries: string[];
+  roles: string[];
+  acquisitionExperience: 'first-time' | 'experienced';
+  motivation: string;
+  values: string[];
+  locationPreference: string[];
+  teamPreference: 'retain' | 'replace' | 'either';
+  growthApproach: 'growth' | 'stable';
+  budget: { min: number; max: number };
+  revenueRange: { min: number; max: number };
+  employeeRange: { min: number; max: number };
+  financingType: 'cash' | 'financed' | 'sba';
+  sdeMultiple: number;
+}
+
+export interface SearchCriteria {
+  industries: string[];
+  excludedIndustries: string[];
+  revenueRange: { min: number; max: number };
+  employeeRange: { min: number; max: number };
+  locationPreference: string[];
+  businessAge: { min: number; max: number };
+  ownerSituation: string[];
+  keywords: string[];
+  sdeMultiple: number;
+}
+
+export interface OutreachSettings {
+  dailyDiscovery: boolean;
+  autoOutreach: boolean;
+  responseHandling: boolean;
+  bookingEnabled: boolean;
+}
+
+export interface ActivationRequest {
+  criteria: SearchCriteria;
+  leads: any[];
+  settings: OutreachSettings;
+}

@@ -372,6 +372,26 @@ export const apiClient = {
     );
     return response.data;
   },
+
+  // INTAKE - Activate autonomous outreach
+  activateOutreach: async (request: any): Promise<{ success: boolean; message: string }> => {
+    if (USE_MOCK_DATA) {
+      // Simulate successful activation
+      console.log('🤖 Automation activated:', request);
+      return {
+        success: true,
+        message: 'Autonomous outreach activated successfully'
+      };
+    }
+    const response = await fetchWithRetry<ApiResponse<{ success: boolean; message: string }>>(
+      `${API_BASE_URL}/api/intake/activate`,
+      {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }
+    );
+    return response.data;
+  },
 };
 
 // Export base URL for WebSocket connections

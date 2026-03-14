@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import ExploreView from './views/Explore'
 import DashboardView from './views/Dashboard'
+import IntakeView from './views/Intake'
 
 function App() {
   const location = useLocation()
@@ -24,9 +25,19 @@ function App() {
             {/* Desktop Navigation */}
             <div className="hidden sm:flex sm:space-x-8">
               <Link
-                to="/"
+                to="/intake"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
-                  isActive('/')
+                  isActive('/intake')
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                INTAKE
+              </Link>
+              <Link
+                to="/explore"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
+                  isActive('/explore')
                     ? 'border-primary-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
@@ -71,10 +82,21 @@ function App() {
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
               <Link
-                to="/"
+                to="/intake"
                 onClick={() => setIsMenuOpen(false)}
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  isActive('/')
+                  isActive('/intake')
+                    ? 'bg-primary-50 border-primary-500 text-primary-700'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                INTAKE
+              </Link>
+              <Link
+                to="/explore"
+                onClick={() => setIsMenuOpen(false)}
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive('/explore')
                     ? 'bg-primary-50 border-primary-500 text-primary-700'
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 }`}
@@ -100,7 +122,9 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Routes>
-          <Route path="/" element={<ExploreView />} />
+          <Route path="/" element={<IntakeView />} />
+          <Route path="/intake" element={<IntakeView />} />
+          <Route path="/explore" element={<ExploreView />} />
           <Route path="/dashboard" element={<DashboardView />} />
         </Routes>
       </main>
