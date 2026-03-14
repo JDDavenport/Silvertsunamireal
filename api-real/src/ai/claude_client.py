@@ -18,8 +18,8 @@ class AcquisitorAI:
     
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
-        self.model = "claude-3-5-sonnet-20241022"  # Use Sonnet for quality
-        self.fast_model = "claude-3-haiku-20240307"  # Use Haiku for speed
+        self.model = "claude-sonnet-4-6"  # Updated working model
+        self.fast_model = "claude-haiku-4-5-20251001"  # Updated fast model
     
     async def score_lead(self, lead: Dict, buyer_profile: Dict) -> Dict:
         """
