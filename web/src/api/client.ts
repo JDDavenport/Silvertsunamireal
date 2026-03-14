@@ -19,8 +19,9 @@ import type {
 import { mockLeads, mockPipelineLeads, mockActivities, mockMetrics, mockBookings, getMockLeadDetail } from '../data/mock';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || true; // Default to true for demo
+// Use the real deployed backend when available, fallback to mock for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://acquisitor-api.up.railway.app' || 'http://localhost:8000';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || false; // Set to false for production
 
 // Default request timeout (ms)
 const DEFAULT_TIMEOUT = 30000;
