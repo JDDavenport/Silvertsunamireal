@@ -212,6 +212,9 @@ class DirectOwnerSequence(SequenceTemplate):
     value-first approach to acquisition conversations.
     """
     
+    def __init__(self):
+        super().__init__(SequenceType.DIRECT_OWNER)
+    
     def _load_templates(self) -> None:
         """Load the 4-step direct owner sequence."""
         self.steps = [
@@ -311,6 +314,9 @@ class BrokerSequence(SequenceTemplate):
     and intermediaries who represent sellers.
     """
     
+    def __init__(self):
+        super().__init__(SequenceType.BROKER)
+    
     def _load_templates(self) -> None:
         """Load the 3-step broker sequence."""
         self.steps = [
@@ -394,6 +400,9 @@ class LandingPageSequence(SequenceTemplate):
     For leads who have submitted an inquiry through the landing page.
     Fast, responsive follow-up with multiple touchpoints.
     """
+    
+    def __init__(self):
+        super().__init__(SequenceType.LANDING_PAGE)
     
     def _load_templates(self) -> None:
         """Load the 3-step landing page sequence."""
