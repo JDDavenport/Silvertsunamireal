@@ -1,0 +1,4 @@
+# DEALFLOW Outreach Engine - Dependencies
+# Core requirements - all others use stdlib
+
+requests>=2.31.0
