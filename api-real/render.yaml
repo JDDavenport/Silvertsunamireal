@@ -9,6 +9,11 @@ services:
         fromDatabase:
           name: acquisitor-db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: acquisitor-redis
+          type: keyvalue
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: GOOGLE_CLIENT_ID
@@ -17,6 +22,16 @@ services:
         sync: false
       - key: FRONTEND_URL
         value: https://acquisitor.vercel.app
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRO_PRICE_ID
+        sync: false
+      - key: ENABLE_RATE_LIMITING
+        value: "true"
     healthCheckPath: /health
 
 databases:
@@ -24,3 +39,8 @@ databases:
     plan: starter
     databaseName: acquisitor
     user: acquisitor
+
+keyValue:
+  - name: acquisitor-redis
+    plan: starter
+    maxMemoryGB: 1
