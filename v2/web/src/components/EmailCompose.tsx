@@ -115,7 +115,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div data-testid="email-compose-modal" className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <h3 className="font-semibold">Send Email to {lead.name}</h3>
@@ -128,6 +128,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
           {/* Template Selector */}
           <div className="relative">
             <button
+              data-testid="template-selector"
               onClick={() => setShowTemplates(!showTemplates)}
               className="w-full flex items-center justify-between px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700"
             >
@@ -158,6 +159,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
           <div>
             <label className="block text-sm font-medium mb-1">To</label>
             <input
+              data-testid="email-to-input"
               type="email"
               value={to}
               onChange={(e) => setTo(e.target.value)}
@@ -170,6 +172,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
           <div>
             <label className="block text-sm font-medium mb-1">Subject</label>
             <input
+              data-testid="email-subject-input"
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -182,6 +185,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
           <div>
             <label className="block text-sm font-medium mb-1">Message</label>
             <textarea
+              data-testid="email-body-textarea"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="Write your message..."
@@ -205,6 +209,7 @@ export function EmailCompose({ lead, onClose, onSent }: EmailComposeProps) {
             </button>
             
             <button
+              data-testid="email-send-btn"
               onClick={handleSend}
               disabled={sending || !to.trim() || !subject.trim() || !body.trim()}
               className="flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-lg font-medium transition-colors"

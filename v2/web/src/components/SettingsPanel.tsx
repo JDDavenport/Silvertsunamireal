@@ -83,21 +83,21 @@ export function SettingsPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div data-testid="settings-loading" className="flex items-center justify-center h-64">
         <Loader className="w-8 h-8 animate-spin text-indigo-500" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div data-testid="settings" className="space-y-8 max-w-3xl">
       <div>
         <h2 className="text-2xl font-bold mb-2">Settings</h2>
         <p className="text-slate-400">Configure your ACQUISITOR agent behavior</p>
       </div>
 
       {/* Email Limits */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+      <div data-testid="email-limit-section" className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
             <Mail className="w-5 h-5 text-blue-400" />
@@ -112,6 +112,7 @@ export function SettingsPanel() {
           <div>
             <label className="block text-sm font-medium mb-2">Daily Email Limit</label>
             <input
+              data-testid="email-limit-slider"
               type="range"
               min="5"
               max="100"
@@ -121,7 +122,7 @@ export function SettingsPanel() {
             />
             <div className="flex justify-between text-sm text-slate-400 mt-1">
               <span>5</span>
-              <span className="text-indigo-400 font-medium">{settings.daily_email_limit} emails/day</span>
+              <span data-testid="email-limit-value" className="text-indigo-400 font-medium">{settings.daily_email_limit} emails/day</span>
               <span>100</span>
             </div>
           </div>
@@ -129,7 +130,7 @@ export function SettingsPanel() {
       </div>
 
       {/* Auto-Approve */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+      <div data-testid="auto-approve-section" className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
             <Bot className="w-5 h-5 text-green-400" />
@@ -144,6 +145,7 @@ export function SettingsPanel() {
           <div>
             <label className="block text-sm font-medium mb-2">Auto-Approve Threshold (0 = off)</label>
             <input
+              data-testid="auto-approve-threshold"
               type="range"
               min="0"
               max="100"
@@ -153,7 +155,7 @@ export function SettingsPanel() {
             />
             <div className="flex justify-between text-sm text-slate-400 mt-1">
               <span>Off</span>
-              <span className={settings.auto_approve_threshold > 0 ? 'text-green-400 font-medium' : ''}>
+              <span data-testid="threshold-value" className={settings.auto_approve_threshold > 0 ? 'text-green-400 font-medium' : ''}>
                 {settings.auto_approve_threshold === 0 ? 'Manual approval' : `Score ≥ ${settings.auto_approve_threshold}`}
               </span>
               <span>100</span>
@@ -166,7 +168,7 @@ export function SettingsPanel() {
       </div>
 
       {/* Discovery Frequency */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+      <div data-testid="discovery-schedule-section" className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
             <Bell className="w-5 h-5 text-purple-400" />
@@ -181,6 +183,7 @@ export function SettingsPanel() {
           {['hourly', 'daily', 'weekly', 'manual'].map((freq) => (
             <button
               key={freq}
+              data-testid={`schedule-${freq}`}
               onClick={() => updateSetting('discovery_frequency', freq)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 settings.discovery_frequency === freq
@@ -195,7 +198,7 @@ export function SettingsPanel() {
       </div>
 
       {/* Notifications */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+      <div data-testid="notifications-section" className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
             <Bell className="w-5 h-5 text-yellow-400" />
@@ -214,6 +217,7 @@ export function SettingsPanel() {
           ].map(({ key, label, desc }) => (
             <label key={key} className="flex items-start gap-3 p-3 bg-slate-950 rounded-lg cursor-pointer hover:bg-slate-900 transition-colors">
               <input
+                data-testid={`notify-${key}`}
                 type="checkbox"
                 checked={settings.notification_preferences[key as keyof typeof settings.notification_preferences]}
                 onChange={(e) => setSettings(prev => ({
@@ -236,6 +240,7 @@ export function SettingsPanel() {
         <div className="mt-4">
           <label className="block text-sm font-medium mb-2">Notification Email</label>
           <input
+            data-testid="notification-email"
             type="email"
             value={settings.notification_email}
             onChange={(e) => updateSetting('notification_email', e.target.value)}
@@ -248,6 +253,7 @@ export function SettingsPanel() {
       {/* Save Button */}
       <div className="flex items-center gap-4">
         <button
+          data-testid="save-settings-btn"
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl font-semibold transition-colors"
@@ -271,7 +277,7 @@ export function SettingsPanel() {
         </button>
 
         {error && (
-          <div className="flex items-center gap-2 text-red-400">
+          <div data-testid="settings-error" className="flex items-center gap-2 text-red-400">
             <AlertCircle className="w-4 h-4" />
             {error}
           </div>
