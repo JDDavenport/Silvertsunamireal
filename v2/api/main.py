@@ -14,10 +14,10 @@ from passlib.context import CryptContext
 import secrets
 
 from gmail_service import gmail_service
-from discovery_service import DiscoveryService
+from real_discovery_service import RealDiscoveryService
 
 # Discovery service instance
-discovery_service = DiscoveryService(DB_PATH)
+discovery_service = RealDiscoveryService(DB_PATH)
 
 # Database
 DB_PATH = Path(__file__).parent / "acquisitor.db"
