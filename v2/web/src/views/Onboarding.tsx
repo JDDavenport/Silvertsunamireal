@@ -128,7 +128,7 @@ export function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div data-testid="onboarding-chat" className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-3xl mx-auto px-4 py-8 h-screen flex flex-col">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -148,6 +148,7 @@ export function Onboarding() {
           {messages.map((message) => (
             <div
               key={message.id}
+              data-testid={`${message.role}-message`}
               className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -157,7 +158,7 @@ export function Onboarding() {
               }`}>
                 {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
-              <div className={`max-w-[80%] p-4 rounded-2xl ${
+              <div data-testid={message.type === 'complete' ? 'completion-summary' : undefined} className={`max-w-[80%] p-4 rounded-2xl ${
                 message.role === 'user'
                   ? 'bg-indigo-600 text-white'
                   : message.type === 'criteria'
@@ -170,6 +171,7 @@ export function Onboarding() {
                 
                 {message.type === 'complete' && (
                   <button
+                    data-testid="go-to-dashboard-btn"
                     onClick={() => navigate('/dashboard')}
                     className="mt-4 flex items-center gap-2 px-6 py-3 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors"
                   >
@@ -182,7 +184,7 @@ export function Onboarding() {
           ))}
           
           {isLoading && (
-            <div className="flex gap-3">
+            <div data-testid="loading-indicator" className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                 <Bot className="w-4 h-4" />
               </div>
@@ -201,6 +203,7 @@ export function Onboarding() {
         {step < questions.length && (
           <div className="flex gap-2">
             <input
+              data-testid="chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -210,6 +213,7 @@ export function Onboarding() {
               disabled={isLoading}
             />
             <button
+              data-testid="send-message-btn"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
               className="px-4 py-3 bg-indigo-600 rounded-xl hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
