@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { 
   CheckCircle, 
   XCircle, 
@@ -67,8 +68,10 @@ export function LeadBacklog() {
       });
       setLeads(leads.filter(l => l.id !== leadId));
       setSelectedLead(null);
+      toast.success('Lead approved and moved to pipeline');
     } catch (error) {
       console.error('Failed to approve lead:', error);
+      toast.error('Failed to approve lead');
     } finally {
       setActionLoading(null);
     }
@@ -82,8 +85,10 @@ export function LeadBacklog() {
       });
       setLeads(leads.filter(l => l.id !== leadId));
       setSelectedLead(null);
+      toast.success('Lead rejected');
     } catch (error) {
       console.error('Failed to reject lead:', error);
+      toast.error('Failed to reject lead');
     } finally {
       setActionLoading(null);
     }

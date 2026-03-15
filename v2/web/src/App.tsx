@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LandingPage } from './views/LandingPage';
 import { Onboarding } from './views/Onboarding';
@@ -42,6 +43,29 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppRoutes />
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#1e293b',
+                color: '#fff',
+                border: '1px solid #334155'
+              },
+              success: {
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#1e293b'
+                }
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#1e293b'
+                }
+              }
+            }}
+          />
         </BrowserRouter>
       </AuthProvider>
     </GoogleOAuthProvider>
