@@ -179,6 +179,31 @@ def init_db():
         )
     """)
     
+    # Lead Notes
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lead_notes (
+            id TEXT PRIMARY KEY,
+            lead_id TEXT REFERENCES leads(id),
+            content TEXT,
+            type TEXT DEFAULT 'note',
+            created_by TEXT REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Lead Activities
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lead_activities (
+            id TEXT PRIMARY KEY,
+            lead_id TEXT REFERENCES leads(id),
+            user_id TEXT REFERENCES users(id),
+            type TEXT,
+            description TEXT,
+            metadata TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
     conn.commit()
     conn.close()
     print(f"✅ Database initialized at {DB_PATH}")
@@ -558,6 +583,88 @@ async def update_settings(settings: dict, current_user: dict = Depends(get_curre
     conn.close()
     
     return {"success": True}
+
+# CRM Endpoints
+@app.get("/api/leads/{lead_id}/notes")
+async def get_lead_notes(lead_id: str, current_user: dict = Depends(get_current_user)):
+    """Get notes for a lead"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify lead belongs to user
+    cursor.execute("SELECT id FROM leads WHERE id = ? AND user_id = ?", (lead_id, current_user["id"]))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    cursor.execute("""
+        SELECT * FROM lead_notes 
+        WHERE lead_id = ? 
+        ORDER BY created_at DESC
+    """, (lead_id,))
+    
+    notes = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return {"data": notes}
+
+@app.post("/api/leads/{lead_id}/notes")
+async def add_lead_note(
+    lead_id: str, 
+    note: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a note to a lead"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify lead belongs to user
+    cursor.execute("SELECT id FROM leads WHERE id = ? AND user_id = ?", (lead_id, current_user["id"]))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    note_id = str(uuid.uuid4())
+    cursor.execute("""
+        INSERT INTO lead_notes (id, lead_id, content, type, created_by)
+        VALUES (?, ?, ?, ?, ?)
+    """, (note_id, lead_id, note.get("content"), note.get("type", "note"), current_user["id"]))
+    
+    # Add activity
+    activity_id = str(uuid.uuid4())
+    cursor.execute("""
+        INSERT INTO lead_activities (id, lead_id, type, description, user_id)
+        VALUES (?, ?, 'note_added', ?, ?)
+    """, (activity_id, lead_id, f"Note added: {note.get('content', '')[:50]}...", current_user["id"]))
+    
+    conn.commit()
+    conn.close()
+    
+    return {"success": True, "note_id": note_id}
+
+@app.get("/api/leads/{lead_id}/activities")
+async def get_lead_activities(lead_id: str, current_user: dict = Depends(get_current_user)):
+    """Get activity history for a lead"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify lead belongs to user
+    cursor.execute("SELECT id FROM leads WHERE id = ? AND user_id = ?", (lead_id, current_user["id"]))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    cursor.execute("""
+        SELECT * FROM lead_activities 
+        WHERE lead_id = ? 
+        ORDER BY timestamp DESC
+        LIMIT 50
+    """, (lead_id,))
+    
+    activities = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return {"data": activities}
 
 # WebSocket for real-time updates
 class ConnectionManager:

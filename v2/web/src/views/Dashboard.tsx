@@ -5,6 +5,7 @@ import axios from 'axios';
 import { LeadBacklog } from '../components/LeadBacklog';
 import { PipelineView } from '../components/PipelineView';
 import { SettingsPanel } from '../components/SettingsPanel';
+import { CRMView } from '../components/CRMView';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -265,7 +266,3 @@ function ActionCard({ title, description, icon: Icon, action, to }: { title: str
   );
 }
 
-// Placeholder components for other routes
-function CRMView() {
-  return <div><h2>CRM</h2></div>;
-}
