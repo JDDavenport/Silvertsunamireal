@@ -13,6 +13,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 import secrets
 
+from gmail_service import gmail_service
+
 # Database
 DB_PATH = Path(__file__).parent / "acquisitor.db"
 
@@ -665,6 +667,128 @@ async def get_lead_activities(lead_id: str, current_user: dict = Depends(get_cur
     conn.close()
     
     return {"data": activities}
+
+# Email Endpoints
+@app.post("/api/leads/{lead_id}/send-email")
+async def send_lead_email(
+    lead_id: str,
+    email_data: dict,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send an email to a lead"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify lead belongs to user and get lead details
+    cursor.execute("SELECT * FROM leads WHERE id = ? AND user_id = ?", (lead_id, current_user["id"]))
+    lead = cursor.fetchone()
+    if not lead:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    lead = dict(lead)
+    to_email = lead.get("email") or email_data.get("to")
+    
+    if not to_email:
+        conn.close()
+        raise HTTPException(status_code=400, detail="No email address for this lead")
+    
+    # Send email via Gmail
+    subject = email_data.get("subject", "")
+    body = email_data.get("body", "")
+    
+    message_id = gmail_service.send_email(
+        to=to_email,
+        subject=subject,
+        body=body,
+        from_name=current_user.get("name", "ACQUISITOR")
+    )
+    
+    if not message_id:
+        conn.close()
+        raise HTTPException(status_code=500, detail="Failed to send email")
+    
+    # Log the email
+    cursor.execute("""
+        INSERT INTO email_logs (user_id, lead_id, to_email, subject, body, sent_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (current_user["id"], lead_id, to_email, subject, body, datetime.now().isoformat()))
+    
+    # Update lead status
+    cursor.execute("""
+        UPDATE leads SET 
+            status = 'outreach',
+            email_sent = email_sent + 1,
+            email_sent_at = ?,
+            last_activity_at = ?
+        WHERE id = ?
+    """, (datetime.now().isoformat(), datetime.now().isoformat(), lead_id))
+    
+    # Add activity
+    activity_id = str(uuid.uuid4())
+    cursor.execute("""
+        INSERT INTO lead_activities (id, lead_id, type, description, user_id)
+        VALUES (?, ?, 'email_sent', ?, ?)
+    """, (activity_id, lead_id, f"Email sent: {subject}", current_user["id"]))
+    
+    conn.commit()
+    conn.close()
+    
+    return {"success": True, "message_id": message_id}
+
+@app.get("/api/email/templates")
+async def get_email_templates(current_user: dict = Depends(get_current_user)):
+    """Get email templates for outreach"""
+    templates = [
+        {
+            "id": "intro",
+            "name": "Introduction",
+            "subject": "Acquisition Opportunity - {{business_name}}",
+            "body": """Hi {{owner_name}},
+
+My name is {{sender_name}} and I'm reaching out regarding {{business_name}}. I'm an entrepreneur looking to acquire businesses in the {{industry}} space.
+
+I came across your company and was impressed by {{highlight}}. I'd love to learn more about your business and explore if there might be a fit for an acquisition.
+
+Would you be open to a brief conversation about your future plans for the business?
+
+Best regards,
+{{sender_name}}"""
+        },
+        {
+            "id": "followup",
+            "name": "Follow-up",
+            "subject": "Following up - {{business_name}}",
+            "body": """Hi {{owner_name}},
+
+I wanted to follow up on my previous message about {{business_name}}. I understand you may be busy, but I'd still love to connect when you have a moment.
+
+I'm particularly interested in learning about your vision for the business and any transition plans you might be considering.
+
+Would you have 15 minutes for a quick call this week?
+
+Best regards,
+{{sender_name}}"""
+        },
+        {
+            "id": "discovery",
+            "name": "Discovery Call",
+            "subject": "Quick question about {{business_name}}",
+            "body": """Hi {{owner_name}},
+
+I hope this message finds you well. I'm researching businesses in the {{industry}} industry and {{business_name}} caught my attention.
+
+I'm curious - are you currently considering any growth strategies or partnership opportunities for the business?
+
+I'd value the opportunity to learn from your experience in the industry.
+
+Best regards,
+{{sender_name}}"""
+        }
+    ]
+    
+    return {"data": templates}
 
 # WebSocket for real-time updates
 class ConnectionManager:

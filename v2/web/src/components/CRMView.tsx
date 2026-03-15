@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { EmailCompose } from './EmailCompose';
 import { 
   Building2, 
   Mail, 
@@ -58,6 +59,7 @@ export function CRMView() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [newNote, setNewNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [showEmailCompose, setShowEmailCompose] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -201,12 +203,12 @@ export function CRMView() {
                 </div>
                 <div className="flex gap-2">
                   {selectedLead.email && (
-                    <a
-                      href={`mailto:${selectedLead.email}`}
+                    <button
+                      onClick={() => setShowEmailCompose(true)}
                       className="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors"
                     >
                       <Mail className="w-4 h-4" />
-                    </a>
+                    </button>
                   )}
                   {selectedLead.phone && (
                     <a
@@ -287,6 +289,14 @@ export function CRMView() {
           </div>
         )}
       </div>
+      
+      {showEmailCompose && selectedLead && (
+        <EmailCompose
+          lead={selectedLead}
+          onClose={() => setShowEmailCompose(false)}
+          onSent={() => fetchLeadDetails(selectedLead.id)}
+        />
+      )}
     </div>
   );
 }
