@@ -42,6 +42,38 @@ export function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // WebSocket for real-time updates
+  useEffect(() => {
+    const wsUrl = `${API_URL.replace('http', 'ws')}/ws/dashboard?token=${token}`;
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('WebSocket message:', data);
+      
+      // Refresh stats on relevant updates
+      if (data.type === 'new_lead' || data.type === 'email_sent' || data.type === 'status_change') {
+        fetchStats();
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+    
+    return () => {
+      ws.close();
+    };
+  }, [token]);
+
   const fetchStats = async () => {
     try {
       const response = await axios.get(`${API_URL}/dashboard/stats`, {
