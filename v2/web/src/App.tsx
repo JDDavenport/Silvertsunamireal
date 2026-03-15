@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LandingPage } from './views/LandingPage';
 import { Onboarding } from './views/Onboarding';
 import { Dashboard } from './views/Dashboard';
+import { CheckoutResult } from './views/CheckoutResult';
 
 const GOOGLE_CLIENT_ID = "238142947257-25pcmqi9vuamd1ntaoihbj8n9v7skt3s.apps.googleusercontent.com";
 
@@ -33,6 +34,7 @@ function AppRoutes() {
         path="/dashboard/*" 
         element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />} 
       />
+      <Route path="/checkout" element={<CheckoutResult />} />
     </Routes>
   );
 }
