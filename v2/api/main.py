@@ -838,6 +838,76 @@ async def get_discovery_status(current_user: dict = Depends(get_current_user)):
         }
     }
 
+# CSV Import Endpoints
+@app.post("/api/leads/import")
+async def import_leads_csv(
+    import_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Import leads from CSV content"""
+    from csv_importer import CSVImporter
+    
+    csv_content = import_data.get('csv_content', '')
+    if not csv_content:
+        raise HTTPException(status_code=400, detail="No CSV content provided")
+    
+    importer = CSVImporter(str(DB_PATH))
+    
+    # Parse CSV
+    result = importer.parse_csv(csv_content, current_user["id"])
+    
+    if not result['success']:
+        raise HTTPException(status_code=400, detail=result['error'])
+    
+    # Save leads
+    saved_count = importer.save_leads(result['leads'])
+    
+    # Log activity
+    conn = get_db()
+    cursor = conn.cursor()
+    activity_id = str(uuid.uuid4())
+    cursor.execute("""
+        INSERT INTO agent_activities (id, user_id, type, description, timestamp)
+        VALUES (?, ?, 'import', ?, ?)
+    """, (activity_id, current_user["id"], f"Imported {saved_count} leads from CSV", datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    
+    return {
+        "success": True,
+        "imported": saved_count,
+        "total_in_file": result['count'],
+        "errors": result['errors'],
+        "column_mapping": result['column_mapping']
+    }
+
+@app.post("/api/leads/import/validate")
+async def validate_csv_import(
+    import_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Validate CSV before importing - returns preview"""
+    from csv_importer import CSVImporter
+    
+    csv_content = import_data.get('csv_content', '')
+    if not csv_content:
+        raise HTTPException(status_code=400, detail="No CSV content provided")
+    
+    importer = CSVImporter(str(DB_PATH))
+    result = importer.parse_csv(csv_content, current_user["id"])
+    
+    if not result['success']:
+        raise HTTPException(status_code=400, detail=result['error'])
+    
+    # Return preview (first 5 leads)
+    return {
+        "success": True,
+        "preview": result['leads'][:5],
+        "total": result['count'],
+        "column_mapping": result['column_mapping'],
+        "errors": result['errors'][:10]  # First 10 errors
+    }
+
 # WebSocket for real-time updates
 class ConnectionManager:
     def __init__(self):
