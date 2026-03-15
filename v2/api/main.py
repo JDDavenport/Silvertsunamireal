@@ -14,6 +14,10 @@ from passlib.context import CryptContext
 import secrets
 
 from gmail_service import gmail_service
+from discovery_service import DiscoveryService
+
+# Discovery service instance
+discovery_service = DiscoveryService(DB_PATH)
 
 # Database
 DB_PATH = Path(__file__).parent / "acquisitor.db"
@@ -790,6 +794,50 @@ Best regards,
     
     return {"data": templates}
 
+# Discovery Endpoints
+@app.post("/api/discovery/run")
+async def run_discovery(
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Manually trigger lead discovery"""
+    background_tasks.add_task(discovery_service.run_discovery_job, current_user["id"])
+    return {"success": True, "message": "Discovery started in background"}
+
+@app.get("/api/discovery/status")
+async def get_discovery_status(current_user: dict = Depends(get_current_user)):
+    """Get discovery status and last run info"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get last discovery activity
+    cursor.execute("""
+        SELECT timestamp, description FROM agent_activities 
+        WHERE user_id = ? AND type = 'discovery'
+        ORDER BY timestamp DESC LIMIT 1
+    """, (current_user["id"],))
+    
+    last_run = cursor.fetchone()
+    
+    # Get count of new leads in last 24 hours
+    cursor.execute("""
+        SELECT COUNT(*) FROM leads 
+        WHERE user_id = ? AND status = 'new' 
+        AND created_at > datetime('now', '-1 day')
+    """, (current_user["id"],))
+    
+    new_leads_today = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return {
+        "data": {
+            "last_run": dict(last_run) if last_run else None,
+            "new_leads_today": new_leads_today,
+            "discovery_enabled": True
+        }
+    }
+
 # WebSocket for real-time updates
 class ConnectionManager:
     def __init__(self):
@@ -808,6 +856,21 @@ class ConnectionManager:
             await self.active_connections[user_id].send_json(message)
 
 manager = ConnectionManager()
+
+# Background discovery scheduler
+async def scheduled_discovery():
+    """Run discovery every hour for all users"""
+    while True:
+        try:
+            await discovery_service.run_scheduled_discovery()
+        except Exception as e:
+            print(f"❌ Discovery error: {e}")
+        await asyncio.sleep(3600)  # Run every hour
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on startup"""
+    asyncio.create_task(scheduled_discovery())
 
 @app.websocket("/ws/dashboard")
 async def websocket_endpoint(websocket: WebSocket, token: str):
