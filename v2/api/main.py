@@ -408,6 +408,58 @@ async def approve_lead(lead_id: str, current_user: dict = Depends(get_current_us
     
     return {"success": True}
 
+@app.post("/leads/{lead_id}/reject")
+async def reject_lead(lead_id: str, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE leads SET status = 'rejected' 
+        WHERE id = ? AND user_id = ?
+    """, (lead_id, current_user["id"]))
+    
+    conn.commit()
+    conn.close()
+    
+    return {"success": True}
+
+@app.get("/api/pipeline")
+async def get_pipeline(current_user: dict = Depends(get_current_user)):
+    """Get all leads in pipeline (not new/rejected)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT * FROM leads 
+        WHERE user_id = ? AND status NOT IN ('new', 'rejected')
+        ORDER BY score DESC, created_at DESC
+    """, (current_user["id"],))
+    
+    leads = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return {"data": leads}
+
+@app.patch("/api/scout/leads/{lead_id}/status")
+async def update_lead_status(
+    lead_id: str, 
+    status_update: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update lead status (for pipeline movement)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE leads SET status = ? 
+        WHERE id = ? AND user_id = ?
+    """, (status_update.get("status"), lead_id, current_user["id"]))
+    
+    conn.commit()
+    conn.close()
+    
+    return {"success": True}
+
 @app.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     conn = get_db()
@@ -468,6 +520,39 @@ async def update_agent_config(config: AgentConfig, current_user: dict = Depends(
     cursor.execute("""
         UPDATE users SET agent_config = ? WHERE id = ?
     """, (json.dumps(config.dict()), current_user["id"]))
+    
+    conn.commit()
+    conn.close()
+    
+    return {"success": True}
+
+@app.get("/api/settings")
+async def get_settings(current_user: dict = Depends(get_current_user)):
+    """Get user settings"""
+    config = json.loads(current_user.get("agent_config", "{}"))
+    return {
+        "data": {
+            "daily_email_limit": config.get("daily_email_limit", 25),
+            "auto_approve_threshold": config.get("auto_approve_threshold", 0),
+            "discovery_frequency": config.get("discovery_frequency", "daily"),
+            "notification_email": current_user.get("email", ""),
+            "notification_preferences": {
+                "new_leads": True,
+                "email_replies": True,
+                "daily_summary": True
+            }
+        }
+    }
+
+@app.post("/api/settings")
+async def update_settings(settings: dict, current_user: dict = Depends(get_current_user)):
+    """Update user settings"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE users SET agent_config = ? WHERE id = ?
+    """, (json.dumps(settings), current_user["id"]))
     
     conn.commit()
     conn.close()

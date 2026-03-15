@@ -3,6 +3,8 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { LeadBacklog } from '../components/LeadBacklog';
+import { PipelineView } from '../components/PipelineView';
+import { SettingsPanel } from '../components/SettingsPanel';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -76,7 +78,7 @@ export function Dashboard() {
               <Route path="/backlog" element={<LeadBacklog />} />
               <Route path="/pipeline" element={<PipelineView />} />
               <Route path="/crm" element={<CRMView />} />
-              <Route path="/settings" element={<SettingsView />} />
+              <Route path="/settings" element={<SettingsPanel />} />
             </Routes>
           </div>
         </div>
@@ -264,14 +266,6 @@ function ActionCard({ title, description, icon: Icon, action, to }: { title: str
 }
 
 // Placeholder components for other routes
-function PipelineView() {
-  return <div><h2>Pipeline</h2></div>;
-}
-
 function CRMView() {
   return <div><h2>CRM</h2></div>;
-}
-
-function SettingsView() {
-  return <div><h2>Settings</h2></div>;
 }
