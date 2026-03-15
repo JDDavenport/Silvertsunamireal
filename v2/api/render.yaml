@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: acquisitor-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GOOGLE_CREDENTIALS_PATH
+        value: ./credentials.json
+      - key: GOOGLE_TOKEN_PATH
+        value: ./token.pickle
+    disk:
+      name: acquisitor-data
+      mountPath: /data
+      sizeGB: 1
