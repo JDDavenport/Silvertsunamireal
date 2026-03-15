@@ -184,37 +184,40 @@ function AgentStatusBadge({ status }: { status: string }) {
 
 function Overview({ stats, agentStatus }: { stats: any; agentStatus: any }) {
   return (
-    <div className="space-y-8">
+    <div data-testid="dashboard" className="space-y-8">
       {/* Agent Status Card */}
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-indigo-500/20">
+      <div data-testid="agent-status" className="p-6 rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-indigo-500/20">
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Bot className="w-5 h-5 text-indigo-400" />
               <h2 className="text-lg font-semibold">Your ACQUISITOR Agent</h2>
             </div>
-            <p className="text-slate-400">{agentStatus.currentActivity}</p>
+            <p data-testid="agent-current-activity" className="text-slate-400">{agentStatus.currentActivity}</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div data-testid="agent-last-activity" className="flex items-center gap-2 text-sm text-slate-500">
             <Clock className="w-4 h-4" />
             Last active: {new Date(agentStatus.lastActivity).toLocaleTimeString()}
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div data-testid="agent-daily-stats" className="grid grid-cols-3 gap-4">
           <StatBox 
+            data-testid="stat-leads-discovered"
             icon={TrendingUp}
             label="Leads Discovered"
             value={stats?.total_leads || 0}
             trend="Today"
           />
           <StatBox 
+            data-testid="stat-emails-sent"
             icon={Mail}
             label="Emails Sent"
             value={stats?.emails_sent || 0}
             trend="This week"
           />
           <StatBox 
+            data-testid="stat-active-deals"
             icon={Activity}
             label="Active Deals"
             value={stats?.active_leads || 0}
@@ -243,23 +246,23 @@ function Overview({ stats, agentStatus }: { stats: any; agentStatus: any }) {
       </div>
 
       {/* Recent Activity */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
+      <div data-testid="activity-feed" className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
         <div className="space-y-3">
           {stats?.recent_activities?.slice(0, 5).map((activity: any) => (
-            <div key={activity.id} className="flex items-center gap-4 p-3 rounded-xl bg-slate-800/50">
+            <div key={activity.id} data-testid="activity-item" className="flex items-center gap-4 p-3 rounded-xl bg-slate-800/50">
               <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-indigo-400" />
               </div>
               <div className="flex-1">
-                <p className="font-medium">{activity.description}</p>
-                <p className="text-sm text-slate-500">
+                <p data-testid="activity-description" className="font-medium">{activity.description}</p>
+                <p data-testid="activity-timestamp" className="text-sm text-slate-500">
                   {new Date(activity.timestamp).toLocaleString()}
                 </p>
               </div>
             </div>
           )) || (
-            <p className="text-slate-500 text-center py-8">No recent activity</p>
+            <p data-testid="empty-activity" className="text-slate-500 text-center py-8">No recent activity</p>
           )}
         </div>
       </div>

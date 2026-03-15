@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - text: ACQUISITOR
+    - generic [ref=e12]:
+      - generic [ref=e13]: Now with autonomous outreach
+      - heading "Your AI Agent for Business Acquisition" [level=1] [ref=e14]
+      - paragraph [ref=e15]: Tell us your story. Our AI discovers businesses matching your criteria, scores them, and reaches out on your behalf. You just approve and take calls.
+      - button "Get Started with Google" [active] [ref=e16]:
+        - img [ref=e17]
+        - text: Get Started with Google
+        - img [ref=e22]
+      - paragraph [ref=e24]: Free during beta. No credit card required.
+  - generic [ref=e25]:
+    - generic [ref=e26]:
+      - heading "How It Works" [level=2] [ref=e27]
+      - paragraph [ref=e28]: Your personal acquisition team, automated
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - img [ref=e32]
+        - heading "1. Tell Your Story" [level=3] [ref=e35]
+        - paragraph [ref=e36]: Chat with our AI about your background, budget, and what you're looking for in a business.
+      - generic [ref=e37]:
+        - img [ref=e39]
+        - heading "2. Agent Goes to Work" [level=3] [ref=e42]
+        - paragraph [ref=e43]: Your agent discovers businesses, scores them with AI, and identifies the best matches for you.
+      - generic [ref=e44]:
+        - img [ref=e46]
+        - heading "3. Approve & Connect" [level=3] [ref=e48]
+        - paragraph [ref=e49]: Review leads, approve outreach, and take calls with interested sellers. Your agent handles the rest.
+  - generic [ref=e52]:
+    - generic [ref=e53]:
+      - img [ref=e54]
+      - text: Bank-level security
+    - generic [ref=e56]:
+      - img [ref=e57]
+      - text: Gmail integration
+    - generic [ref=e60]:
+      - img [ref=e61]
+      - text: Powered by Claude AI
+```

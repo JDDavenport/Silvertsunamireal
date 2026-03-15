@@ -54,6 +54,7 @@ export function LandingPage() {
             </p>
 
             <button
+              data-testid="google-oauth-btn"
               onClick={() => googleLogin()}
               className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-slate-950 rounded-xl font-semibold text-lg hover:bg-slate-100 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/25"
             >
