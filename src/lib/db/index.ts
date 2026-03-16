@@ -11,8 +11,6 @@ const client = postgres(connectionString, {
   ssl: false,
   max: 10,
   connect_timeout: 30,
-  onclose: (connId) => console.log("[DB] Connection closed:", connId),
-  onerror: (err) => console.error("[DB] Connection error:", err),
 });
 
 console.log("[DB] Postgres client created");
