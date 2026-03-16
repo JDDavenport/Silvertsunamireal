@@ -1,25 +1,24 @@
+import { createClient } from "@supabase/supabase-js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
 const connectionString = process.env.DATABASE_URL!;
 
-// Check if we're in production (Vercel)
-const isProduction = process.env.VERCEL_ENV === 'production';
+// For Vercel serverless, we need special SSL handling
+const isVercel = process.env.VERCEL === '1';
 
-console.log("[DB] Connecting to database...");
-console.log("[DB] isProduction:", isProduction);
-console.log("[DB] Connection string starts with:", connectionString?.substring(0, 30));
+console.log("[DB] Connecting... isVercel:", isVercel);
 
 const client = postgres(connectionString, {
   prepare: false,
-  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
-  onnotice: (notice) => console.log("[DB Notice]", notice),
-  onparameter: (key, value) => console.log("[DB Parameter]", key, value),
+  ssl: isVercel ? { rejectUnauthorized: false } : undefined,
+  connect_timeout: 10,
+  idle_timeout: 20,
 });
 
 console.log("[DB] Client created");
 
 export const db = drizzle(client, { schema });
 
-console.log("[DB] Drizzle instance created");
+console.log("[DB] Drizzle ready");
