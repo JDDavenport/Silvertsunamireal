@@ -1,51 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 
-let auth: any;
-let authError: any;
+let initError: any = null;
+let db: any = null;
 
+// Try to initialize auth module
 try {
+  console.log("[Auth] Loading auth module...");
   const authModule = require("@/lib/auth");
-  auth = authModule.auth;
+  console.log("[Auth] Auth module loaded");
 } catch (e: any) {
-  authError = e;
+  initError = e;
+  console.error("[Auth] Failed to load auth module:", e.message);
+}
+
+// Try to initialize db
+try {
+  console.log("[Auth] Loading db module...");
+  const dbModule = require("@/lib/db");
+  db = dbModule.db;
+  console.log("[Auth] DB module loaded");
+} catch (e: any) {
+  if (!initError) initError = e;
+  console.error("[Auth] Failed to load db module:", e.message);
 }
 
 export async function GET(req: NextRequest) {
-  if (authError) {
+  if (initError) {
     return NextResponse.json({ 
-      error: "Auth initialization failed", 
-      message: authError?.message || String(authError),
-      stack: authError?.stack
+      error: "Module initialization failed", 
+      message: initError?.message || String(initError),
+      stack: initError?.stack?.split('\n').slice(0, 5)
     }, { status: 500 });
   }
   
-  try {
-    return await auth.handler(req);
-  } catch (error: any) {
-    return NextResponse.json({ 
-      error: "Auth GET error", 
-      message: error?.message || String(error),
-      stack: error?.stack
-    }, { status: 500 });
-  }
+  return NextResponse.json({ message: "Auth endpoint ready" });
 }
 
 export async function POST(req: NextRequest) {
-  if (authError) {
+  if (initError) {
     return NextResponse.json({ 
-      error: "Auth initialization failed", 
-      message: authError?.message || String(authError),
-      stack: authError?.stack
+      error: "Module initialization failed", 
+      message: initError?.message || String(initError),
+      stack: initError?.stack?.split('\n').slice(0, 5)
     }, { status: 500 });
   }
   
-  try {
-    return await auth.handler(req);
-  } catch (error: any) {
-    return NextResponse.json({ 
-      error: "Auth POST error", 
-      message: error?.message || String(error),
-      stack: error?.stack
-    }, { status: 500 });
-  }
+  return NextResponse.json({ message: "Auth POST ready" });
 }
