@@ -4,6 +4,10 @@ import { db } from "@/lib/db";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+console.log("[Auth] Initializing Better Auth...");
+console.log("[Auth] appUrl:", appUrl);
+console.log("[Auth] DATABASE_URL exists:", !!process.env.DATABASE_URL);
+
 // Only enable social providers if credentials are available
 const socialProviders: any = {};
 
@@ -40,6 +44,8 @@ export const auth = betterAuth({
     cookiePrefix: "acquisitor",
   },
 });
+
+console.log("[Auth] Better Auth initialized");
 
 export type AuthSession = typeof auth.$Infer.Session;
 export { appUrl };
