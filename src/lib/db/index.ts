@@ -4,18 +4,19 @@ import * as schema from "./schema";
 
 const connectionString = process.env.DATABASE_URL!;
 
-console.log("[DB] Starting connection...");
-console.log("[DB] URL prefix:", connectionString?.split('@')[1]?.split('/')[0]);
+console.log("[DB] Configuring postgres client...");
 
-// For Supabase on Vercel, use connection pooler with no SSL
 const client = postgres(connectionString, {
   prepare: false,
-  ssl: false,  // Try without SSL for Supabase
+  ssl: false,
   max: 10,
   connect_timeout: 30,
+  onclose: (connId) => console.log("[DB] Connection closed:", connId),
+  onopen: (connId) => console.log("[DB] Connection opened:", connId),
+  onerror: (err) => console.error("[DB] Connection error:", err),
 });
 
-console.log("[DB] Postgres client configured");
+console.log("[DB] Postgres client created");
 
 export const db = drizzle(client, { schema });
 

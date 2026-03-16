@@ -9,17 +9,17 @@ export async function GET(req: NextRequest) {
   if (req.url.includes('/health')) {
     let dbStatus = 'unknown';
     let dbError = '';
-    let dbStack = '';
+    let dbCode = '';
     
     try {
       const { db } = await import("@/lib/db");
-      // Try a raw query
       const result = await db.query.user.findFirst();
       dbStatus = 'connected';
     } catch (e: any) {
       dbStatus = 'error';
       dbError = e.message;
-      dbStack = e.stack;
+      dbCode = e.code || 'no-code';
+      console.error("[Health] Full error:", e);
     }
     
     return NextResponse.json({ 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       env: process.env.VERCEL_ENV,
       dbConnection: dbStatus,
       dbError,
-      dbStack: dbStack?.split('\n').slice(0, 3)
+      dbCode
     });
   }
   return handlers.GET(req);
