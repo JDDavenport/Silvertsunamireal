@@ -1,38 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
-import { sql } from "drizzle-orm";
 
 const handlers = toNextJsHandler(auth);
 
 export async function GET(req: NextRequest) {
   // Health check
   if (req.url.includes('/health')) {
-    // Test database connection
     let dbStatus = 'unknown';
     let dbError = '';
+    let dbStack = '';
+    
     try {
-      // Dynamic import to test
       const { db } = await import("@/lib/db");
-      console.log("[Health] DB module loaded");
-      
-      // Try a simple query
-      const result = await db.execute(sql`SELECT 1 as test`);
-      console.log("[Health] Query result:", result);
+      // Try a raw query
+      const result = await db.query.user.findFirst();
       dbStatus = 'connected';
     } catch (e: any) {
       dbStatus = 'error';
       dbError = e.message;
-      console.error("[Health] DB error:", e);
+      dbStack = e.stack;
     }
     
     return NextResponse.json({ 
       status: 'ok',
-      database: !!process.env.DATABASE_URL,
+      env: process.env.VERCEL_ENV,
       dbConnection: dbStatus,
       dbError,
-      secret: !!process.env.BETTER_AUTH_SECRET,
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL
+      dbStack: dbStack?.split('\n').slice(0, 3)
     });
   }
   return handlers.GET(req);
