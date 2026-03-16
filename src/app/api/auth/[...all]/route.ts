@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
-  console.log("[Auth] GET hit");
-  return NextResponse.json({ message: "Auth GET works" });
+  console.log("[Auth] GET received");
+  try {
+    const response = await auth.handler(req);
+    console.log("[Auth] GET handler success");
+    return response;
+  } catch (error: any) {
+    console.error("[Auth] GET error:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  console.log("[Auth] POST hit");
+  console.log("[Auth] POST received");
   try {
-    const body = await req.json();
-    console.log("[Auth] POST body:", body);
-    return NextResponse.json({ message: "Auth POST works", received: body });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 });
+    const response = await auth.handler(req);
+    console.log("[Auth] POST handler success");
+    return response;
+  } catch (error: any) {
+    console.error("[Auth] POST error:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
