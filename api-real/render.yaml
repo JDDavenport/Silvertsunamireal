@@ -2,17 +2,12 @@ services:
   - type: web
     name: acquisitor-api
     runtime: docker
-    plan: starter
+    plan: free
     dockerfilePath: Dockerfile
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: acquisitor-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: acquisitor-redis
-          type: keyvalue
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -36,11 +31,6 @@ services:
 
 databases:
   - name: acquisitor-db
-    plan: starter
+    plan: free
     databaseName: acquisitor
     user: acquisitor
-
-keyValue:
-  - name: acquisitor-redis
-    plan: starter
-    maxMemoryGB: 1
